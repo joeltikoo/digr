@@ -7,7 +7,7 @@ Thanks for your interest in contributing. DIGR is a free, open source undergroun
 1. Fork the repo
 2. Clone your fork
    ```bash
-   git clone https://github.com/YOURUSERNAME/digr.git
+   git clone https://github.com/joeltikoo/digr.git
    cd digr
    ```
 3. Install dependencies
