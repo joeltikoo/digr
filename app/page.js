@@ -2,6 +2,35 @@
 
 import { useState } from "react"
 
+function SkeletonCard() {
+  return (
+    <div className="border border-zinc-800 rounded-lg p-5 animate-pulse">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="h-5 bg-zinc-800 rounded w-36 mb-2"></div>
+          <div className="h-3 bg-zinc-800 rounded w-24"></div>
+        </div>
+        <div className="h-6 bg-zinc-800 rounded w-20"></div>
+      </div>
+      <div className="h-3 bg-zinc-800 rounded w-full mb-2"></div>
+      <div className="h-3 bg-zinc-800 rounded w-3/4 mb-6"></div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <div className="h-2 bg-zinc-800 rounded w-12 mb-3"></div>
+          <div className="h-3 bg-zinc-800 rounded w-full mb-2"></div>
+          <div className="h-3 bg-zinc-800 rounded w-4/5 mb-2"></div>
+          <div className="h-3 bg-zinc-800 rounded w-3/5"></div>
+        </div>
+        <div>
+          <div className="h-2 bg-zinc-800 rounded w-12 mb-3"></div>
+          <div className="h-3 bg-zinc-800 rounded w-full mb-2"></div>
+          <div className="h-3 bg-zinc-800 rounded w-4/5"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const [vibe, setVibe] = useState("")
   const [seeds, setSeeds] = useState("")
@@ -81,10 +110,19 @@ export default function Home() {
             disabled={loading || (!vibe && !seeds && !refs)}
             className="bg-white text-black font-bold py-4 rounded-lg hover:bg-zinc-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ? "digging..." : "dig"}
+            {loading ? "digging..." : results.length > 0 ? "dig again" : "dig"}
           </button>
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </div>
+
+        {/* SKELETONS */}
+        {loading && (
+          <div className="mt-10 flex flex-col gap-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        )}
 
         {/* RESULTS */}
         {results.length > 0 && (
