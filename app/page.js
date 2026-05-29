@@ -92,6 +92,8 @@ export default function Home() {
             <p className="text-zinc-500 text-sm">{results.length} artists found</p>
             {results.map((a, i) => (
               <div key={i} className="border border-zinc-800 rounded-lg p-5 hover:border-zinc-600 transition">
+
+                {/* name + vibe */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h2 className="font-bold text-lg">{a.name}</h2>
@@ -101,8 +103,40 @@ export default function Home() {
                     {a.vibe}
                   </span>
                 </div>
-                <p className="text-zinc-300 text-sm mb-4">{a.why}</p>
-                <div className="grid grid-cols-2 gap-4">
+
+                {/* why */}
+                <p className="text-zinc-300 text-sm mb-3">{a.why}</p>
+
+                {/* lastfm tags */}
+                {a.tags?.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {a.tags.map((tag, j) => (
+                      <span key={j} className="text-xs border border-zinc-700 text-zinc-400 px-2 py-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* obscurity + listeners */}
+                {a.obscurity && (
+                  <p className="text-xs text-zinc-500 mb-1">
+                    obscurity: <span className="text-zinc-300">{a.obscurity}</span>
+                    {a.listeners > 0 && (
+                      <span className="ml-2">({a.listeners.toLocaleString()} listeners)</span>
+                    )}
+                  </p>
+                )}
+
+                {/* similar artists */}
+                {a.similar?.length > 0 && (
+                  <p className="text-xs text-zinc-500 mb-4">
+                    similar: <span className="text-zinc-300">{a.similar.join(", ")}</span>
+                  </p>
+                )}
+
+                {/* tracks + albums */}
+                <div className="grid grid-cols-2 gap-4 mt-3">
                   <div>
                     <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">tracks</p>
                     {a.tracks.map((t, j) => (
@@ -122,6 +156,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
+
               </div>
             ))}
           </div>

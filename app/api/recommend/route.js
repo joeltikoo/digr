@@ -2,6 +2,43 @@ import Groq from "groq-sdk"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+async function getLastfmData(artistName) {
+  const key = process.env.LASTFM_API_KEY
+  const base = "https://ws.audioscrobbler.com/2.0/"
+  const enc = encodeURIComponent(artistName)
+
+  try {
+    const [infoRes, similarRes] = await Promise.all([
+      fetch(`${base}?method=artist.getinfo&artist=${enc}&api_key=${key}&format=json`),
+      fetch(`${base}?method=artist.getsimilar&artist=${enc}&api_key=${key}&format=json&limit=4`)
+    ])
+
+    const [infoData, similarData] = await Promise.all([
+      infoRes.json(),
+      similarRes.json()
+    ])
+
+    const listeners = parseInt(infoData.artist?.stats?.listeners || "0")
+    const tags = infoData.artist?.tags?.tag?.map(t => t.name).slice(0, 4) || []
+    const similar = similarData.similarartists?.artist?.map(a => a.name) || []
+
+    // obscurity score: fewer listeners = more obscure
+    let obscurity = "unknown"
+    if (listeners > 0) {
+      if (listeners < 10000) obscurity = "extremely underground"
+      else if (listeners < 100000) obscurity = "very underground"
+      else if (listeners < 500000) obscurity = "underground"
+      else if (listeners < 2000000) obscurity = "somewhat niche"
+      else obscurity = "mainstream"
+    }
+
+    return { listeners, tags, similar, obscurity }
+
+  } catch {
+    return { listeners: 0, tags: [], similar: [], obscurity: "unknown" }
+  }
+}
+
 export async function POST(request) {
   try {
     const { vibe, seeds, refs } = await request.json()
@@ -46,12 +83,19 @@ export async function POST(request) {
     })
 
     const text = completion.choices[0].message.content
-
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) throw new Error("no JSON found in response")
     const data = JSON.parse(match[0])
 
-    return Response.json(data)
+    // enrich each artist with Last.fm data
+    const enriched = await Promise.all(
+      data.artists.map(async (artist) => {
+        const lastfm = await getLastfmData(artist.name)
+        return { ...artist, ...lastfm }
+      })
+    )
+
+    return Response.json({ artists: enriched })
 
   } catch (err) {
     console.error("API error:", err)
